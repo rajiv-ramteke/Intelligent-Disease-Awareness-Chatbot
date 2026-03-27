@@ -15,16 +15,43 @@ Conversational agents based on AI techniques, particularly Dialogflow and Rasa, 
 Our solution leverages state-of-the-art technologies in the aforementioned areas in a coordinated manner that to our knowledge, is novel in the literature.
 ## Implementation
 Programming Languages:
-- Python
+- Python  
 
 Frameworks/Libraries:
-- Rasa / Dialogflow (NLP)
-- Flask / FastAPI (Backend)
-- Twilio API (SMS/WhatsApp integration)
+- Rasa / Dialogflow (Natural Language Processing)
+- Flask / FastAPI (Backend Development)
+- TensorFlow / PyTorch (Machine Learning models)
+- SpeechRecognition / gTTS (Voice processing)
 
 Tools Used:
-- Cloud platforms (AWS / GCP / Azure)
-- Government health APIs
-- Database (MongoDB / PostgreSQL)
+- Twilio API (SMS and WhatsApp integration)
+- Google Speech-to-Text / Text-to-Speech APIs (Voice assistant support)
+- Cloud Platforms (AWS / Google Cloud / Azure)
+- Database Systems (MongoDB / PostgreSQL)
+- GitHub (Version control and collaboration)
 
-The system is deployed on the cloud for scalability and reliability.
+The system is deployed on cloud infrastructure to ensure scalability, reliability, and support for both text and voice-based user interaction.
+## Results and Discussion
+The chatbot effectively answers user questions regarding symptoms of diseases, preventive measures, and the vaccination calendar for diseases. 
+Major achievements:
+- Responded to health questions with an accuracy of almost 80%
+- Increased awareness by about 20% in the pilot areas
+- Sent out real-time disease outbreak alerts
+The use of SMS and WhatsApp made it very convenient and engaging as it reached even the low internet-penetration areas.
+## Limitation
+- Relying on the government health data that may or may not be available and accurate
+- Lack of expertise in understanding very complex medical questions
+- Difficulties in translating languages for less common dialects
+- Need for constant updates to be correct
+## Future Scope
+- Make it available in more regional languages and dialects to reach a wider population
+- Include AI for symptom diagnosis based on initial information provided by the user
+- Develop offline functionality for areas with limited internet connectivity
+- Integrate the app with telemedicine providers for remote consultations.
+## Conculusion  
+The public health chatbot platform based on NLP and machine learning, and incorporating real-time data, could be a viable solution for improving health literacy in marginalized populations, by providing scalable, timely, and multilingual access to best-quality health information.
+## References
+[1] WHO, "Digital Health Interventions," 2021  
+[2] Rasa Documentation, https://rasa.com/docs  
+[3] Dialogflow Documentation, https://cloud.google.com/dialogflow  
+[4] Research papers on AI in Healthcare Chatbots  
