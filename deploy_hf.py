@@ -1,7 +1,10 @@
 import os
 from huggingface_hub import HfApi
 
-TOKEN = "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"
+TOKEN = os.environ.get('HF_TOKEN', '')
+if not TOKEN:
+    print("Error: HF_TOKEN environment variable not set.")
+    exit(1)
 
 try:
     api = HfApi(token=TOKEN)
