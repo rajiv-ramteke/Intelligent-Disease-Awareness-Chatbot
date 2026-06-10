@@ -1,3 +1,13 @@
+---
+title: HealthBot Pro
+emoji: 🏥
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+pinned: false
+app_port: 7860
+---
+
 # HealthBot Pro – Intelligent Disease Awareness Chatbot
 
 HealthBot Pro is a production-ready, deployment-friendly AI healthcare awareness chatbot web application. It is designed to be easily deployable, scalable, and serves as an excellent final-year engineering project.
