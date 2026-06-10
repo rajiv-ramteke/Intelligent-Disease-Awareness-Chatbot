@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: healthbot-pro
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --config deployment/gunicorn.conf.py app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_ENV
+        value: production
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true

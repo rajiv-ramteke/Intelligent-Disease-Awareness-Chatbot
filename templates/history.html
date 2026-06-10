@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat History - HealthBot Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .history-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .btn-danger {
+            background: rgba(220, 38, 38, 0.2);
+            color: #FCA5A5;
+            border: 1px solid rgba(220, 38, 38, 0.4);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-danger:hover {
+            background: rgba(220, 38, 38, 0.4);
+            color: white;
+        }
+        .history-item {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .timestamp {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-align: right;
+        }
+        .user-msg {
+            background: rgba(79, 70, 229, 0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: inline-block;
+            max-width: 80%;
+        }
+        .bot-msg {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+        }
+        .nav-top {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        /* Override global overflow: hidden from style.css for this page */
+        body {
+            overflow-y: auto !important;
+            height: auto;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-top">
+        <a href="/chat" style="color: white; text-decoration: none; font-size: 1.2rem;">
+            <i class="fas fa-arrow-left"></i> Back to Chat
+        </a>
+        <a href="/logout" style="color: #FCA5A5; text-decoration: none;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+
+    <div class="history-container">
+        <div class="history-header">
+            <h2><i class="fas fa-history"></i> Your Chat History</h2>
+            
+            {% if history %}
+            <form action="/history/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete all chat history?');">
+                <button type="submit" class="btn-danger"><i class="fas fa-trash"></i> Delete History</button>
+            </form>
+            {% endif %}
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div style="margin-bottom: 20px; color: #6EE7B7; text-align: center;">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+        {% if not history %}
+            <div style="text-align: center; color: var(--text-muted); padding: 40px; background: rgba(30,41,59,0.4); border-radius: 12px;">
+                <i class="fas fa-comment-slash" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                <p>No chat history found.</p>
+            </div>
+        {% else %}
+            {% for item in history %}
+            <div class="history-item">
+                <div class="timestamp">{{ item.timestamp }}</div>
+                <div>
+                    <div class="user-msg"><strong>You:</strong> {{ item.user_message }}</div>
+                </div>
+                <div class="bot-msg"><strong>HealthBot Pro:</strong><br><br>{{ item.bot_response }}</div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</body>
+</html>

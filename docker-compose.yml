@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app.py
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - .:/app
+      - ./database:/app/database
+    command: flask run --host=0.0.0.0 --port=8000

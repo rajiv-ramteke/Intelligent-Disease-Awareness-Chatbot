@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthBot Pro - AI Healthcare Assistant</title>
+    <meta name="description" content="HealthBot Pro – Your intelligent AI-powered healthcare awareness assistant. Get health tips, symptom info, and find nearby clinics.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/chatbot.css">
+</head>
+<body>
+    <div id="emergency-banner" class="emergency-banner hidden">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span><strong>EMERGENCY DETECTED:</strong> Please seek immediate medical attention or call emergency services.</span>
+        <button id="find-hospitals-btn" class="btn-emergency">Find Nearest Hospital</button>
+        <button class="close-banner" onclick="document.getElementById('emergency-banner').classList.add('hidden')"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo-container">
+                <div class="logo-icon"><i class="fas fa-heartbeat"></i></div>
+                <h2>HealthBot <span class="pro-badge">PRO</span></h2>
+            </div>
+            
+            <ul class="nav-links">
+                <li class="active" id="nav-chat"><a href="#"><i class="fas fa-comment-medical"></i> Chat Assistant</a></li>
+                <li><a href="#" id="nav-facilities"><i class="fas fa-hospital"></i> Nearby Facilities</a></li>
+                <li class="facility-types" id="facility-types-list">
+                    <button class="facility-type-btn" data-type="hospitals" data-label="Hospitals">
+                        <span class="ft-icon">&#127973;&#65039;</span> Hospitals
+                    </button>
+                    <button class="facility-type-btn" data-type="pharmacy" data-label="Pharmacies">
+                        <span class="ft-icon">&#128138;</span> Pharmacies
+                    </button>
+                    <button class="facility-type-btn" data-type="blood+bank" data-label="Blood Banks">
+                        <span class="ft-icon">&#129656;</span> Blood Banks
+                    </button>
+                    <button class="facility-type-btn" data-type="clinic" data-label="Clinics">
+                        <span class="ft-icon">&#128138;</span> Clinics
+                    </button>
+                    <button class="facility-type-btn" data-type="doctor" data-label="Specialists">
+                        <span class="ft-icon">&#129658;</span> Specialists
+                    </button>
+                </li>
+                <li><a href="#" id="nav-tips"><i class="fas fa-lightbulb"></i> Daily Tips</a></li>
+            </ul>
+
+            <div class="settings-panel">
+                <label for="language-select">Language:</label>
+                <select id="language-select">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi (&#2361;&#2367;&#2306;&#2342;&#2368;)</option>
+                    <option value="mr">Marathi (&#2350;&#2352;&#2366;&#2336;&#2368;)</option>
+                </select>
+            </div>
+        </nav>
+
+        <!-- Main Chat Area -->
+        <main class="chat-main">
+            <div class="top-nav" style="display: flex; justify-content: flex-end; padding: 10px 20px; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.1);">
+                {% if current_user.is_authenticated %}
+                    <span style="color: var(--text-muted); margin-right: 15px; display: flex; align-items: center;"><i class="fas fa-user-circle" style="margin-right: 5px;"></i> {{ current_user.name }}</span>
+                    <a href="/history" style="color: var(--primary); margin-right: 15px; text-decoration: none; font-weight: 500;"><i class="fas fa-history"></i> History</a>
+                    <a href="/logout" style="color: #FCA5A5; text-decoration: none; font-weight: 500;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                {% else %}
+                    <a href="/login" style="color: var(--primary); margin-right: 15px; text-decoration: none; font-weight: 500;"><i class="fas fa-sign-in-alt"></i> Login</a>
+                    <a href="/register" style="color: var(--secondary); text-decoration: none; font-weight: 500;"><i class="fas fa-user-plus"></i> Register</a>
+                {% endif %}
+            </div>
+
+            <header class="chat-header">
+                <div class="status-indicator online"></div>
+                <div>
+                    <h1>AI Medical Assistant</h1>
+                    <p class="subtitle">Your personal healthcare guide</p>
+                </div>
+            </header>
+
+            <div class="chat-window" id="chat-window">
+                <div class="message system">
+                    <div class="avatar"><i class="fas fa-robot"></i></div>
+                    <div class="bubble">
+                        Hello! I'm HealthBot Pro. How can I help you with your health today? (Disclaimer: I do not diagnose or prescribe medicine.)
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <button id="mic-btn" class="icon-btn" title="Voice Input"><i class="fas fa-microphone"></i></button>
+                <div class="input-wrapper">
+                    <input type="text" id="chat-input" placeholder="Type your health question here..." autocomplete="off">
+                </div>
+                <button id="send-btn" class="icon-btn primary"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </main>
+
+        <!-- Right Widgets Panel -->
+        <aside class="widgets-panel" id="widgets-panel">
+
+            <!-- Maps Sub-panel (hidden by default) -->
+            <div id="maps-subpanel" class="hidden">
+                <div class="panel-header">
+                    <h3 id="panel-title">Nearby Facilities</h3>
+                    <button id="close-panel" class="icon-btn"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="panel-content" id="panel-content"></div>
+            </div>
+
+            <!-- Health Widgets (visible by default) -->
+            <div id="health-widgets">
+
+                <!-- Emergency Card -->
+                <div class="widget-card emergency-card">
+                    <div class="widget-card-header">
+                        <i class="fas fa-bell"></i>
+                        <span>Emergency Help</span>
+                    </div>
+                    <p class="emergency-desc">If you or someone you know is in a medical emergency, seek immediate help.</p>
+                    <a href="tel:112" class="emergency-call-btn">
+                        <i class="fas fa-phone"></i> Call Emergency (112)
+                    </a>
+                </div>
+
+                <!-- Health Tip Carousel -->
+                <div class="widget-card tip-card">
+                    <div class="widget-card-header tip-header">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Today's Health Tip</span>
+                    </div>
+                    <p class="tip-text" id="tip-text">Drink plenty of water every day to keep your body hydrated and healthy.</p>
+                    <div class="tip-nav">
+                        <button class="tip-btn" id="tip-prev"><i class="fas fa-chevron-left"></i></button>
+                        <div class="tip-dots" id="tip-dots"></div>
+                        <button class="tip-btn" id="tip-next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Suggested Questions -->
+                <div class="widget-card questions-card">
+                    <div class="widget-card-header">
+                        <i class="fas fa-comments"></i>
+                        <span>Suggested Questions</span>
+                    </div>
+                    <ul class="suggested-list" id="suggested-list">
+                        <li><button class="suggested-btn" data-q="What causes diabetes?">What causes diabetes?</button></li>
+                        <li><button class="suggested-btn" data-q="Best foods for immunity?">Best foods for immunity?</button></li>
+                        <li><button class="suggested-btn" data-q="How to lose weight safely?">How to lose weight safely?</button></li>
+                        <li><button class="suggested-btn" data-q="Home remedies for cold and cough?">Home remedies for cold</button></li>
+                        <li><button class="suggested-btn" data-q="What is hypertension and how to manage it?">What is hypertension?</button></li>
+                    </ul>
+                </div>
+
+                <!-- Health Categories -->
+                <div class="widget-card categories-card">
+                    <div class="widget-card-header">
+                        <i class="fas fa-th-large"></i>
+                        <span>Health Categories</span>
+                    </div>
+                    <ul class="category-list">
+                        <li><button class="category-btn" data-q="Tell me about infectious diseases, their types, causes and prevention.">&#129440; Infectious Diseases</button></li>
+                        <li><button class="category-btn" data-q="Tell me about heart health, common heart diseases and how to keep the heart healthy.">&#10084;&#65039; Heart Health</button></li>
+                        <li><button class="category-btn" data-q="Tell me about mental health, common mental health disorders and ways to improve mental wellbeing.">&#129504; Mental Health</button></li>
+                        <li><button class="category-btn" data-q="Tell me about respiratory health and common lung diseases.">&#129531; Respiratory Health</button></li>
+                        <li><button class="category-btn" data-q="What is a balanced diet and what are the best foods for nutrition?">&#129382; Nutrition &amp; Diet</button></li>
+                        <li><button class="category-btn" data-q="Tell me about fitness and wellness tips for a healthy lifestyle.">&#128170; Fitness &amp; Wellness</button></li>
+                        <li><button class="category-btn" data-q="Tell me about common child health problems and how to keep children healthy.">&#128118; Child Health</button></li>
+                        <li><button class="category-btn" data-q="Tell me about women's health issues and how to manage them.">&#128105; Women's Health</button></li>
+                        <li><button class="category-btn" data-q="Tell me about common skin diseases and how to maintain healthy skin.">&#129076; Skin Health</button></li>
+                    </ul>
+                </div>
+
+            </div>
+        </aside>
+    </div>
+
+    <script src="/static/js/ui.js"></script>
+    <script src="/static/js/voice.js"></script>
+    <script src="/static/js/maps.js"></script>
+    <script src="/static/js/chatbot.js"></script>
+    <script src="/static/js/widgets.js"></script>
+</body>
+</html>

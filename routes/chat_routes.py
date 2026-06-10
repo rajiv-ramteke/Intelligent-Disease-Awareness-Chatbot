@@ -1,0 +1,43 @@
+from flask import Blueprint, request, jsonify, Response, stream_with_context
+from services.ai_service import get_chat_response_stream
+import uuid
+
+chat_bp = Blueprint('chat', __name__, url_prefix='/api/chat')
+
+from flask_login import current_user
+from database import get_db
+
+@chat_bp.route('/message', methods=['POST'])
+def chat_message():
+    data = request.json
+    message = data.get('message', '')
+    session_id = data.get('session_id', str(uuid.uuid4()))
+    language = data.get('language', 'en')
+
+    if not message:
+        return jsonify({"error": "Message is required"}), 400
+
+    def generate():
+        full_response = []
+        try:
+            for chunk in get_chat_response_stream(session_id, message, language):
+                full_response.append(chunk)
+                yield chunk
+        finally:
+            if current_user.is_authenticated:
+                bot_resp = "".join(full_response)
+                # Ensure we only save if we got a response
+                if bot_resp:
+                    db = get_db()
+                    try:
+                        db.execute(
+                            "INSERT INTO chat_history (user_id, user_message, bot_response) VALUES (?, ?, ?)",
+                            (current_user.id, message, bot_resp)
+                        )
+                        db.commit()
+                    except Exception as e:
+                        print(f"Error saving chat history: {e}")
+                    finally:
+                        db.close()
+
+    return Response(stream_with_context(generate()), content_type='text/plain')

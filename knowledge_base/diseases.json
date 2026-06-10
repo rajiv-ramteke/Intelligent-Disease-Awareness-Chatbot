@@ -1,0 +1,14 @@
+[
+    {
+        "name": "Dengue",
+        "overview": "A mosquito-borne viral disease occurring in tropical and subtropical areas.",
+        "symptoms": ["High fever", "Severe headache", "Pain behind eyes", "Muscle and joint pain", "Rash"],
+        "prevention": "Use mosquito repellent, wear long sleeves, remove standing water."
+    },
+    {
+        "name": "Diabetes",
+        "overview": "A chronic condition that affects how your body turns food into energy.",
+        "symptoms": ["Increased thirst", "Frequent urination", "Extreme hunger", "Unexplained weight loss", "Fatigue"],
+        "prevention": "Healthy diet, regular physical activity, maintaining a normal body weight."
+    }
+]
