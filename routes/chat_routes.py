@@ -17,6 +17,19 @@ def chat_message():
     if not message:
         return jsonify({"error": "Message is required"}), 400
 
+    # Save user message to conversations memory
+    try:
+        db = get_db()
+        db.execute(
+            "INSERT INTO conversations (session_id, role, message) VALUES (?, ?, ?)",
+            (session_id, 'user', message)
+        )
+        db.commit()
+    except Exception as e:
+        print(f"Memory error: {e}")
+    finally:
+        db.close()
+
     def generate():
         full_response = []
         try:
@@ -24,20 +37,26 @@ def chat_message():
                 full_response.append(chunk)
                 yield chunk
         finally:
-            if current_user.is_authenticated:
-                bot_resp = "".join(full_response)
-                # Ensure we only save if we got a response
-                if bot_resp:
-                    db = get_db()
-                    try:
+            bot_resp = "".join(full_response)
+            if bot_resp:
+                db = get_db()
+                try:
+                    # Save bot response to conversations memory
+                    db.execute(
+                        "INSERT INTO conversations (session_id, role, message) VALUES (?, ?, ?)",
+                        (session_id, 'assistant', bot_resp)
+                    )
+                    
+                    # Save to logged-in user history
+                    if current_user.is_authenticated:
                         db.execute(
                             "INSERT INTO chat_history (user_id, user_message, bot_response) VALUES (?, ?, ?)",
                             (current_user.id, message, bot_resp)
                         )
-                        db.commit()
-                    except Exception as e:
-                        print(f"Error saving chat history: {e}")
-                    finally:
-                        db.close()
+                    db.commit()
+                except Exception as e:
+                    print(f"Error saving chat history: {e}")
+                finally:
+                    db.close()
 
     return Response(stream_with_context(generate()), content_type='text/plain')

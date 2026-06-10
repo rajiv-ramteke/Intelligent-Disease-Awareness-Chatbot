@@ -12,19 +12,43 @@ def get_chat_response_stream(session_id, message, language='en'):
     
     system_prompt = get_system_prompt(language)
     
-    # Normally we'd fetch conversation history from DB here using session_id
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": message}
-    ]
+    messages = [{"role": "system", "content": system_prompt}]
+
+    # Fetch conversation history from DB to give AI memory
+    # We fetch the PREVIOUS messages (before the one we just inserted)
+    try:
+        from database import get_db
+        db = get_db()
+        # Get all messages for this session, ordered chronologically
+        # But exclude the very last inserted row (the current user message we just saved)
+        history = db.execute(
+            """SELECT role, message FROM conversations 
+               WHERE session_id = ? 
+               AND id < (SELECT MAX(id) FROM conversations WHERE session_id = ?)
+               ORDER BY id ASC LIMIT 20""",
+            (session_id, session_id)
+        ).fetchall()
+        db.close()
+
+        for row in history:
+            messages.append({"role": row['role'], "content": row['message']})
+
+    except Exception as e:
+        print(f"Error fetching history: {e}")
+
+    # Always append the current user message at the end (clean, no duplicates)
+    messages.append({"role": "user", "content": message})
+
 
     try:
         completion = client.chat.completions.create(
             model="meta/llama-3.1-8b-instruct",
             messages=messages,
-            temperature=0.5,
-            top_p=1,
-            max_tokens=1024,
+            temperature=0.8,
+            top_p=0.95,
+            max_tokens=2048,
+            frequency_penalty=1.0,
+            presence_penalty=0.6,
             stream=True
         )
         for chunk in completion:
@@ -33,5 +57,5 @@ def get_chat_response_stream(session_id, message, language='en'):
                 if hasattr(delta, 'content') and delta.content:
                     yield delta.content
     except Exception as e:
-        print(f"Error calling AI API: {e}")
-        yield "I'm sorry, I'm having trouble connecting to my AI core right now. Please try again later."
+        print(f"Error calling AI API: {str(e)}", flush=True)
+        yield f"API Error: {str(e)}"

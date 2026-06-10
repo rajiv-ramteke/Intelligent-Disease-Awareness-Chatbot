@@ -13,6 +13,16 @@ const Chatbot = {
         this.sendBtn = document.getElementById('send-btn');
         this.languageSelect = document.getElementById('language-select');
 
+        this.languageSelect.addEventListener('change', () => {
+            if (this.languageSelect.value === 'hi') {
+                this.inputField.placeholder = "अपना स्वास्थ्य संबंधी सवाल यहाँ लिखें...";
+            } else if (this.languageSelect.value === 'mr') {
+                this.inputField.placeholder = "तुमचा आरोग्यासंबंधित प्रश्न येथे लिहा...";
+            } else {
+                this.inputField.placeholder = "Type your health question here...";
+            }
+        });
+
         this.sendBtn.addEventListener('click', () => this.sendMessage());
         this.inputField.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.sendMessage();
