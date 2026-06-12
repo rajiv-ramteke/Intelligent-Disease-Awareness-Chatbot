@@ -20,9 +20,13 @@ def register():
             flash('Email address already exists')
             return redirect(url_for('auth.register'))
 
-        new_user = User.create(name, email, generate_password_hash(password, method='scrypt'))
-        login_user(new_user)
-        return redirect(url_for('chat_interface'))
+        try:
+            new_user = User.create(name, email, generate_password_hash(password))
+            login_user(new_user)
+            return redirect(url_for('chat_interface'))
+        except Exception as e:
+            flash(f'Registration error: {str(e)}')
+            return redirect(url_for('auth.register'))
 
     return render_template('register.html')
 
