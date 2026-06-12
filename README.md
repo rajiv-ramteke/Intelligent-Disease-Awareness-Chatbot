@@ -1,3 +1,11 @@
+---
+title: Healthbot Pro
+emoji: 🏥
+colorFrom: indigo
+colorTo: emerald
+sdk: docker
+app_port: 7860
+---
 # Intelligent-Disease-Awareness-Chatbot
 Author(s): Rajiv G. Ramteke  
 Affiliation: Suryodaya College of Engineering and Technology, Nagpur  
