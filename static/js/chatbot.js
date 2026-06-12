@@ -11,18 +11,6 @@ const Chatbot = {
         this.chatWindow = document.getElementById('chat-window');
         this.inputField = document.getElementById('chat-input');
         this.sendBtn = document.getElementById('send-btn');
-        this.languageSelect = document.getElementById('language-select');
-
-        this.languageSelect.addEventListener('change', () => {
-            if (this.languageSelect.value === 'hi') {
-                this.inputField.placeholder = "अपना स्वास्थ्य संबंधी सवाल यहाँ लिखें...";
-            } else if (this.languageSelect.value === 'mr') {
-                this.inputField.placeholder = "तुमचा आरोग्यासंबंधित प्रश्न येथे लिहा...";
-            } else {
-                this.inputField.placeholder = "Type your health question here...";
-            }
-        });
-
         this.sendBtn.addEventListener('click', () => this.sendMessage());
         this.inputField.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.sendMessage();
@@ -127,7 +115,7 @@ const Chatbot = {
                 body: JSON.stringify({
                     message: message,
                     session_id: this.sessionId,
-                    language: this.languageSelect.value
+                    language: 'en'
                 })
             });
 
@@ -138,10 +126,49 @@ const Chatbot = {
             msgDiv.className = `message system`;
             msgDiv.innerHTML = `
                 <div class="avatar"><i class="fas fa-robot"></i></div>
-                <div class="bubble"><span class="content"></span></div>
+                <div class="bubble">
+                    <span class="content"></span>
+                    <div class="msg-actions" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px;">
+                        <button class="translate-btn" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 0.85rem; padding: 0;">
+                            <i class="fas fa-language"></i> Translate to Hindi
+                        </button>
+                    </div>
+                </div>
             `;
             this.chatWindow.appendChild(msgDiv);
             const contentSpan = msgDiv.querySelector('.content');
+            const translateBtn = msgDiv.querySelector('.translate-btn');
+
+            let originalText = "";
+            let isTranslated = false;
+
+            translateBtn.addEventListener('click', async () => {
+                if (isTranslated) {
+                    contentSpan.innerHTML = this.formatText(originalText);
+                    translateBtn.innerHTML = '<i class="fas fa-language"></i> Translate to Hindi';
+                    isTranslated = false;
+                    return;
+                }
+                
+                translateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+                try {
+                    const transRes = await fetch('/api/chat/translate', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({text: originalText, target: 'hi'})
+                    });
+                    const transData = await transRes.json();
+                    if(transData.translated) {
+                        contentSpan.innerHTML = this.formatText(transData.translated);
+                        translateBtn.innerHTML = '<i class="fas fa-undo"></i> Show English';
+                        isTranslated = true;
+                    } else {
+                        translateBtn.innerHTML = '<i class="fas fa-language"></i> Translate to Hindi';
+                    }
+                } catch(e) {
+                    translateBtn.innerHTML = '<i class="fas fa-language"></i> Translate to Hindi';
+                }
+            });
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder('utf-8');
@@ -154,6 +181,7 @@ const Chatbot = {
                 contentSpan.innerHTML = this.formatText(fullText);
                 this.chatWindow.scrollTop = this.chatWindow.scrollHeight;
             }
+            originalText = fullText;
             
             if (window.Voice) window.Voice.speak(fullText);
 

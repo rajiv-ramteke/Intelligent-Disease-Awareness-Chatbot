@@ -60,3 +60,21 @@ def chat_message():
                     db.close()
 
     return Response(stream_with_context(generate()), content_type='text/plain')
+
+from deep_translator import GoogleTranslator
+
+@chat_bp.route('/translate', methods=['POST'])
+def translate_text():
+    data = request.json
+    text = data.get('text', '')
+    target_lang = data.get('target', 'hi')
+    
+    if not text:
+        return jsonify({"error": "Text is required"}), 400
+        
+    try:
+        translated = GoogleTranslator(source='en', target=target_lang).translate(text)
+        return jsonify({"translated": translated})
+    except Exception as e:
+        print(f"Translation error: {e}")
+        return jsonify({"error": str(e)}), 500
