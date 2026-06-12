@@ -46,10 +46,7 @@ const Voice = {
         if (this.isRecording) {
             this.recognition.stop();
         } else {
-            const lang = document.getElementById('language-select').value;
-            // Map lang codes to SpeechRecognition codes
-            const langMap = { 'en': 'en-US', 'hi': 'hi-IN', 'mr': 'mr-IN' };
-            this.recognition.lang = langMap[lang] || 'en-US';
+            this.recognition.lang = 'en-US';
             this.recognition.start();
         }
     },
@@ -63,12 +60,10 @@ const Voice = {
         if (!this.synthesis) return;
         
         // Remove markdown and disclaimers for cleaner speech if necessary
-        const cleanText = text.replace(/\\*\\*/g, '');
+        const cleanText = text.replace(/\*\*/g, '');
         
         const utterance = new SpeechSynthesisUtterance(cleanText);
-        const lang = document.getElementById('language-select').value;
-        const langMap = { 'en': 'en-US', 'hi': 'hi-IN', 'mr': 'mr-IN' };
-        utterance.lang = langMap[lang] || 'en-US';
+        utterance.lang = 'en-US';
         
         this.synthesis.speak(utterance);
     }
